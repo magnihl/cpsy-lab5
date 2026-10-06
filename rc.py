@@ -36,15 +36,32 @@ try:
         ord("e"): ("stop    ", robot.stop),
     }
 
-    key = None
-    while key != ord("q"):
+    # curses reports presses but never releases, so a key held down arrives
+    # as repeats and letting go just means the repeats stop
+    STOP_AFTER = 0.4
+    last_press = 0.0
+    moving = False
+
+    while True:
         stdscr.refresh()
         key = stdscr.getch()
+        now = time.monotonic()
+
+        if key == ord("q"):
+            break
+
         if key in actions:
             label, action = actions[key]
             stdscr.addstr(1, 2, label)
             action()
-        time.sleep(0.04)
+            last_press = now
+            moving = True
+        elif moving and now - last_press > STOP_AFTER:
+            robot.stop()
+            stdscr.addstr(1, 2, "idle    ")
+            moving = False
+
+        time.sleep(0.02)
 
 finally:
     if slp is not None:
