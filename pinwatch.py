@@ -11,17 +11,23 @@ pins = encoders["A"] + encoders["B"]
 inputs = {p: DigitalInputDevice(p) for p in pins}
 
 
+SPEED = 0.7
+
+
 def watch(label):
     motor = motors[label]
+    print(f"about to drive motor {label}, watch which wheel moves")
+    sleep(2)
+
     seen = {p: set() for p in pins}
-    motor.forward(0.4)
+    motor.forward(SPEED)
     for _ in range(50):
         for p in pins:
             seen[p].add(inputs[p].value)
         sleep(0.05)
     motor.stop()
 
-    print(f"driving motor {label}, its encoder pins are {encoders[label]}")
+    print(f"motor {label} done, its encoder pins are {encoders[label]}")
     for p in pins:
         values = sorted(seen[p])
         state = "TOGGLING" if len(values) > 1 else "stuck"
