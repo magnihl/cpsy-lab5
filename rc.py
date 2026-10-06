@@ -38,7 +38,7 @@ try:
 
     # curses reports presses but never releases, so a key held down arrives
     # as repeats and letting go just means the repeats stop
-    STOP_AFTER = 0.4
+    STOP_AFTER = 0.1
     last_press = 0.0
     moving = False
 
