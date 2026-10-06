@@ -38,8 +38,14 @@ try:
 
     # curses reports presses but never releases, so a key held down arrives
     # as repeats and letting go just means the repeats stop
+    # the terminal waits before it starts repeating a held key, so the first
+    # press gets a long grace period and the rest get a short one
     STOP_AFTER = 0.1
+    FIRST_HOLD = 0.7
+    REPEAT_GAP = 0.25
+
     last_press = 0.0
+    prev_press = 0.0
     moving = False
 
     while True:
@@ -54,12 +60,16 @@ try:
             label, action = actions[key]
             stdscr.addstr(1, 2, label)
             action()
+            prev_press = last_press
             last_press = now
             moving = True
-        elif moving and now - last_press > STOP_AFTER:
-            robot.stop()
-            stdscr.addstr(1, 2, "idle    ")
-            moving = False
+        elif moving:
+            repeating = (last_press - prev_press) < REPEAT_GAP
+            timeout = STOP_AFTER if repeating else FIRST_HOLD
+            if now - last_press > timeout:
+                robot.stop()
+                stdscr.addstr(1, 2, "idle    ")
+                moving = False
 
         time.sleep(0.02)
 
